@@ -163,6 +163,8 @@ public struct EpicStage<Overlay: View>: View {
     private func stage(_ item: MediaItem) -> some View {
         ZStack(alignment: .bottomLeading) {
             EpicStageArtwork(item: item, trailerURL: trailerItemID == item.id ? item.previewURL : nil)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
             VStack(alignment: .leading, spacing: horizontalSizeClass == .compact ? 7 : 10) {
                 overlay(item)
                 if let badge = item.badge {
@@ -340,18 +342,21 @@ private struct EpicStageArtwork: View {
     let trailerURL: URL?
 
     var body: some View {
-        GeometryReader { geometry in
-            let minY = geometry.frame(in: .named("mediaListsScroll")).minY
-            ArtworkView(item: item)
-                .scaleEffect(1.12)
-                .offset(y: minY > 0 ? -minY * 0.18 : 0)
-                .overlay {
-                    if let trailerURL { TrailerPreview(url: trailerURL) }
-                }
-                .overlay {
-                    LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .center, endPoint: .bottom)
-                }
+        Color.clear.overlay {
+            GeometryReader { geometry in
+                let minY = geometry.frame(in: .named("mediaListsScroll")).minY
+                ArtworkView(item: item)
+                    .scaleEffect(1.12)
+                    .offset(y: minY > 0 ? -minY * 0.18 : 0)
+                    .overlay {
+                        if let trailerURL { TrailerPreview(url: trailerURL) }
+                    }
+                    .overlay {
+                        LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .center, endPoint: .bottom)
+                    }
+            }
         }
+        .clipped()
     }
 }
 
