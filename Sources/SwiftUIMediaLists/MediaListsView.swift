@@ -80,25 +80,22 @@ public struct MediaListsView<Overlay: View>: View {
     }
 
     public var body: some View {
-        GeometryReader { viewport in
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 28) {
-                    ForEach(feeds) { feed in
-                        if feed.kind == .promoted {
-                            EpicStage(items: feed.items, overlay: overlay, onAction: action, intentButton: intentButton)
-                                .frame(height: viewport.size.height * 0.52)
-                                .clipped()
-                        } else {
-                            MediaShelf(feed: feed, overlay: overlay, onAction: action, intentButton: intentButton)
-                        }
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 28) {
+                ForEach(feeds) { feed in
+                    if feed.kind == .promoted {
+                        EpicStage(items: feed.items, overlay: overlay, onAction: action, intentButton: intentButton)
+                            .containerRelativeFrame(.horizontal) { length, _ in length * 9 / 21 }
+                            .clipped()
+                    } else {
+                        MediaShelf(feed: feed, overlay: overlay, onAction: action, intentButton: intentButton)
                     }
                 }
-                .padding(.vertical)
             }
-            .coordinateSpace(name: "mediaListsScroll")
-            .contentMargins(.top, 0, for: .scrollContent)
-            .ignoresSafeArea(edges: .top)
+            .padding(.bottom)
         }
+        .contentMargins(.top, 0, for: .scrollContent)
+        .ignoresSafeArea(edges: .top)
         .background(Color(red: 0.10, green: 0.10, blue: 0.10))
     }
 }
@@ -161,11 +158,7 @@ public struct EpicStage<Overlay: View>: View {
     }
 
     private func stage(_ item: MediaItem) -> some View {
-        ZStack(alignment: .bottomLeading) {
-            EpicStageArtwork(item: item, trailerURL: trailerItemID == item.id ? item.previewURL : nil)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
-            VStack(alignment: .leading, spacing: horizontalSizeClass == .compact ? 7 : 10) {
+        VStack(alignment: .leading, spacing: horizontalSizeClass == .compact ? 7 : 10) {
                 overlay(item)
                 if let badge = item.badge {
                     Text(badge).font(.caption.bold()).padding(7).background(.white.opacity(0.2), in: Capsule())
@@ -183,10 +176,14 @@ public struct EpicStage<Overlay: View>: View {
                         .frame(maxWidth: horizontalSizeClass == .compact ? 340 : 600, alignment: .leading)
                 }
                 EpicStageActions(item: item, onAction: onAction, intentButton: intentButton)
-            }
-            .padding(.leading, horizontalSizeClass == .compact ? 24 : 52)
-            .padding(.bottom, horizontalSizeClass == .compact ? 90 : 104)
         }
+        .padding(.leading, horizontalSizeClass == .compact ? 24 : 52)
+        .padding(.bottom, horizontalSizeClass == .compact ? 90 : 104)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+        .background {
+            EpicStageArtwork(item: item, trailerURL: trailerItemID == item.id ? item.previewURL : nil)
+        }
+        .clipped()
         .foregroundStyle(.white)
     }
 
@@ -342,21 +339,15 @@ private struct EpicStageArtwork: View {
     let trailerURL: URL?
 
     var body: some View {
-        Color.clear.overlay {
-            GeometryReader { geometry in
-                let minY = geometry.frame(in: .named("mediaListsScroll")).minY
-                ArtworkView(item: item)
-                    .scaleEffect(1.12)
-                    .offset(y: minY > 0 ? -minY * 0.18 : 0)
-                    .overlay {
-                        if let trailerURL { TrailerPreview(url: trailerURL) }
-                    }
-                    .overlay {
-                        LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .center, endPoint: .bottom)
-                    }
+        ArtworkView(item: item)
+            .overlay {
+                if let trailerURL { TrailerPreview(url: trailerURL) }
             }
-        }
-        .clipped()
+            .overlay {
+                LinearGradient(colors: [.clear, .black.opacity(0.85)], startPoint: .center, endPoint: .bottom)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
     }
 }
 
@@ -447,15 +438,13 @@ private struct ShimmerPlaceholder: View {
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: reduceMotion)) { context in
-            GeometryReader { proxy in
-                Rectangle().fill(Color.gray.opacity(0.28)).overlay {
-                    let phase = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.4) / 1.4
-                    LinearGradient(colors: [.clear, .white.opacity(0.22), .clear], startPoint: .leading, endPoint: .trailing)
-                        .rotationEffect(.degrees(-18))
-                        .offset(x: (phase * 2 - 1) * proxy.size.width * 1.5)
-                }
-                .clipped()
+            Rectangle().fill(Color.gray.opacity(0.28)).overlay {
+                let phase = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.4) / 1.4
+                LinearGradient(colors: [.clear, .white.opacity(0.22), .clear], startPoint: .leading, endPoint: .trailing)
+                    .rotationEffect(.degrees(-18))
+                    .offset(x: (phase * 2 - 1) * 600)
             }
+            .clipped()
         }
         .accessibilityHidden(true)
     }
