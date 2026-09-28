@@ -85,7 +85,8 @@ public struct MediaListsView<Overlay: View>: View {
                 ForEach(feeds) { feed in
                     if feed.kind == .promoted {
                         EpicStage(items: feed.items, overlay: overlay, onAction: action, intentButton: intentButton)
-                            .containerRelativeFrame([.horizontal, .vertical]) { length, axis in axis == .horizontal ? length : length * 9 / 21 }
+                            .aspectRatio(21.0 / 9.0, contentMode: .fit)
+                            .frame(maxWidth: .infinity)
                             .clipped()
                     } else {
                         MediaShelf(feed: feed, overlay: overlay, onAction: action, intentButton: intentButton)
