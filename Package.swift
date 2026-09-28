@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.4
 import PackageDescription
 
 let package = Package(
@@ -12,8 +12,8 @@ let package = Package(
         .library(name: "SwiftUIMediaLists", targets: ["SwiftUIMediaLists"])
     ],
     targets: [
-        .target(name: "SwiftUIMediaLists"),
-        .testTarget(name: "SwiftUIMediaListsTests", dependencies: ["SwiftUIMediaLists"]),
-        .testTarget(name: "SwiftUIMediaListsConsumerTests", dependencies: ["SwiftUIMediaLists"])
+        .target(name: "SwiftUIMediaLists", swiftSettings: [.swiftLanguageMode(.v6)]),
+        .testTarget(name: "SwiftUIMediaListsTests", dependencies: ["SwiftUIMediaLists"], swiftSettings: [.swiftLanguageMode(.v6)]),
+        .testTarget(name: "SwiftUIMediaListsConsumerTests", dependencies: ["SwiftUIMediaLists"], swiftSettings: [.swiftLanguageMode(.v6)])
     ]
 )
